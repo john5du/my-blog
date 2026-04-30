@@ -1,5 +1,5 @@
 export const SITE_TITLE = '卿之羽';
-export const SITE_DESCRIPTION = '记录 Home Assistant、Docker、CI/CD 和日常折腾的技术笔记。';
+export const SITE_DESCRIPTION = '记录日常折腾的技术笔记。';
 export const SITE_URL = 'https://blog.john5.work';
 
 export const SITE_PATHS = {
