@@ -1,5 +1,14 @@
-// Place any global data in this file.
-// You can import this data from anywhere in your site by using the `import` keyword.
+export const SITE_TITLE = '卿之羽';
+export const SITE_DESCRIPTION = '记录 Home Assistant、Docker、CI/CD 和日常折腾的技术笔记。';
+export const SITE_URL = 'https://blog.john5.work';
 
-export const SITE_TITLE = 'Astro Blog';
-export const SITE_DESCRIPTION = 'Welcome to my website!';
+export const SITE_PATHS = {
+	home: '/',
+	blog: '/blog/',
+	about: '/about/',
+	rss: '/rss.xml',
+	sitemap: '/sitemap-index.xml',
+	faviconSvg: '/favicon.svg',
+	faviconIco: '/favicon.ico',
+	post: (id: string) => `/blog/${id}/`,
+} as const;
