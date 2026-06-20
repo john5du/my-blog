@@ -1,0 +1,38 @@
+---
+import { getEntry, render } from "astro:content";
+import config, { monolocale } from "$config";
+import Base from "$layouts/Base.astro";
+import i18nit from "$i18n";
+
+export async function getStaticPaths() {
+	// Create path for each locale, omitting default locale from URL
+	return config.i18n.locales.map(locale => ({ params: { locale: config.i18n.defaultLocale === locale ? undefined : locale } }));
+}
+
+const { locale = config.i18n.defaultLocale } = Astro.params;
+
+const t = i18nit(locale);
+
+const localePrefix = monolocale ? "" : `${locale}/`;
+
+const introduction = await getEntry("information", `${localePrefix}introduction`);
+
+const { Content: Introduction } = introduction ? await render(introduction) : ({} as any);
+---
+
+<Base title={t("navigation.about")} {locale}>
+	<main class="flex flex-col sm:flex-row justify-between gap-8">
+		<article class="flex flex-col">
+			{
+				introduction && (
+					<div class="mb-6">
+						<h2 class="mb-4">{t("about.introduction")}</h2>
+						<div class="markdown">
+							<Introduction />
+						</div>
+					</div>
+				)
+			}
+		</article>
+	</main>
+</Base>

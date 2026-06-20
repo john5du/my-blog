@@ -1,213 +1,294 @@
-:root {
-	--accent: #0f766e;
-	--accent-soft: #ccfbf1;
-	--ink: 18, 25, 38;
-	--muted: 88, 104, 125;
-	--paper: #fbfcf8;
-	--paper-raised: #ffffff;
-	--line: #d9e2df;
-	--code-bg: #eef6f3;
-	--code-ink: #0f3d38;
-	--shadow: 0 18px 42px rgba(15, 23, 42, 8%);
-	--font-sans:
-		var(--font-atkinson), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-		sans-serif;
-	--font-mono:
-		"SFMono-Regular", Consolas, "Liberation Mono", "Menlo", "Noto Sans Mono", monospace;
+@import "@fontsource/noto-serif-sc/chinese-simplified-400.css";
+@import "@fontsource/noto-serif-sc/chinese-simplified-700.css";
+@import "tailwindcss";
+
+@plugin "@iconify/tailwind4" {
+	prefixes: lucide, simple-icons, fa6-brands;
 }
 
-* {
-	box-sizing: border-box;
+/*
+  Z-index scale:
+  < 0: Below
+  0-9: Base
+  10-99: Elevated
+  100-999: Component
+  1000-9999: Overlay
+  10000-99999: Frame
+*/
+
+:root,
+[data-theme="light"] {
+	--primary-color: #2a2a28;
+	--secondary-color: #7e7e7b;
+	--weak-color: #9f9f9c;
+	--background-color: #fffffd;
+	--block-color: #eeeeee;
+	--shadow-color: #cdcdcc;
+	--selection-color: #adadacc3;
+
+	--swup-fade-theme-duration: 0.15s;
+
+	.astro-code,
+	.astro-code span {
+		background-color: var(--block-color) !important;
+	}
 }
 
-html {
-	background: var(--paper);
-	color-scheme: light;
+[data-theme="dark"] {
+	--primary-color: #dddddb;
+	--secondary-color: #9e9e9b;
+	--weak-color: #5d5d5a;
+	--background-color: #0e0e0c;
+	--block-color: #1e1e1e;
+	--shadow-color: #323231;
+	--selection-color: #adadacc3;
+
+	.astro-code,
+	.astro-code span {
+		color: var(--shiki-dark) !important;
+		background-color: var(--shiki-dark-bg) !important;
+	}
 }
 
-body {
-	margin: 0;
-	padding: 0;
-	background:
-		linear-gradient(90deg, rgba(15, 118, 110, 5%) 1px, transparent 1px),
-		linear-gradient(rgba(15, 118, 110, 5%) 1px, transparent 1px), var(--paper);
-	background-size: 28px 28px;
-	color: rgb(var(--ink));
-	font-family: var(--font-sans);
-	font-size: 18px;
-	line-height: 1.75;
-	text-align: left;
-	word-wrap: break-word;
-	overflow-wrap: break-word;
-}
-
-main {
-	width: min(100% - 2rem, 880px);
-	margin: auto;
-	padding: 4rem 0 5rem;
-}
-
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-	margin: 0 0 0.65rem;
-	color: rgb(var(--ink));
-	font-weight: 700;
-	line-height: 1.25;
-	overflow-wrap: anywhere;
-}
-
-h1 {
-	font-size: 2.55rem;
-}
-
-h2 {
-	font-size: 1.75rem;
-	margin-top: 2.75rem;
-}
-
-h3 {
-	font-size: 1.3rem;
-	margin-top: 2rem;
-}
-
-h4 {
-	font-size: 1.1rem;
-}
-
-h5,
-h6 {
-	font-size: 1rem;
-}
-
-p {
-	margin: 0 0 1.2rem;
-}
-
-strong,
-b {
-	font-weight: 700;
-}
-
-a {
-	color: var(--accent);
-	text-underline-offset: 0.2em;
-}
-
-a:hover {
-	color: #115e59;
-}
-
-ul,
-ol {
-	padding-left: 1.35rem;
-}
-
-li + li {
-	margin-top: 0.35rem;
-}
-
-table {
-	display: block;
-	width: 100%;
-	max-width: 100%;
-	overflow-x: auto;
-	border-collapse: collapse;
-	font-size: 0.95rem;
-}
-
-th,
-td {
-	border-bottom: 1px solid var(--line);
-	padding: 0.65rem 0.75rem;
-	text-align: left;
-}
-
-img {
-	max-width: 100%;
-	height: auto;
-	border-radius: 6px;
-}
-
-code {
-	padding: 0.12rem 0.35rem;
-	border: 1px solid rgba(15, 118, 110, 18%);
-	border-radius: 4px;
-	background: var(--code-bg);
-	color: var(--code-ink);
-	font-family: var(--font-mono);
-	font-size: 0.9em;
-}
-
-pre {
-	max-width: 100%;
-	margin: 1.5rem 0;
-	padding: 1.1rem;
-	overflow-x: auto;
-	border: 1px solid var(--line);
-	border-radius: 6px;
-	background: #0f172a;
-	box-shadow: var(--shadow);
-}
-
-pre > code {
-	all: unset;
-	color: #d1fae5;
-	font-family: var(--font-mono);
-	font-size: 0.88rem;
-	line-height: 1.7;
-}
-
-blockquote {
-	margin: 1.5rem 0;
-	padding: 0.25rem 0 0.25rem 1rem;
-	border-left: 3px solid var(--accent);
-	color: rgb(var(--muted));
-}
-
-hr {
-	border: 0;
-	border-top: 1px solid var(--line);
-	margin: 2rem 0;
-}
-
-textarea,
-input {
-	width: 100%;
-	font: inherit;
-}
-
-.sr-only {
-	position: absolute !important;
-	width: 1px;
-	height: 1px;
-	margin: -1px;
-	padding: 0;
-	overflow: hidden;
-	clip: rect(0, 0, 0, 0);
-	clip-path: inset(50%);
-	border: 0;
-	white-space: nowrap;
-}
-
-@media (max-width: 720px) {
-	body {
-		font-size: 16px;
+@layer base {
+	::selection {
+		background-color: var(--selection-color);
 	}
 
-	main {
-		width: min(100% - 1.25rem, 880px);
-		padding: 2.5rem 0 4rem;
+	::-webkit-scrollbar {
+		background-color: transparent;
+		width: 5px;
+		height: 5px;
+	}
+
+	::-webkit-scrollbar-thumb {
+		border-radius: 5px;
+		background-color: var(--primary-color);
+	}
+
+	*:focus-visible {
+		outline: 0.125rem solid var(--shadow-color);
+		outline-offset: 0.25rem;
+	}
+
+	@supports not selector(::-webkit-scrollbar) {
+		:root {
+			scrollbar-width: thin;
+			scrollbar-color: var(--primary-color) transparent;
+		}
+	}
+
+	html {
+		scroll-behavior: smooth;
+		overflow-x: clip;
+		-webkit-tap-highlight-color: transparent;
+	}
+
+	body {
+		font-size: 1.0625rem;
+		font-family: var(--font-serif), var(--font-mono);
+		color: var(--primary-color);
+		background-color: var(--background-color);
+		overflow-x: clip;
+		user-select: none;
+	}
+
+	@media screen and (max-width: 640px) {
+		body {
+			font-size: 1rem;
+		}
+	}
+
+	h1,
+	h2,
+	h3,
+	h4,
+	h5,
+	h6 {
+		font-weight: bold;
 	}
 
 	h1 {
-		font-size: 2rem;
+		font-size: 2.25rem;
 	}
 
 	h2 {
-		font-size: 1.45rem;
+		font-size: 1.75rem;
+	}
+
+	h3 {
+		font-size: 1.5rem;
+	}
+
+	h4 {
+		font-size: 1.25rem;
+	}
+
+	h5 {
+		font-size: 1.125rem;
+	}
+
+	h6 {
+		font-size: 1rem;
+	}
+
+	a {
+		text-decoration: none;
+		color: inherit;
+		-webkit-user-drag: none;
+	}
+
+	button {
+		display: flex;
+		border: none;
+		color: inherit;
+		font-size: inherit;
+		cursor: pointer;
+		background: transparent;
+	}
+
+	button[disabled] {
+		color: var(--weak-color);
+		cursor: not-allowed;
+	}
+
+	img {
+		max-width: 100%;
+		height: auto;
+		-webkit-user-drag: none;
+	}
+
+	svg {
+		fill: currentColor;
+	}
+
+	hr {
+		border: none;
+	}
+}
+
+.swup-progress-bar {
+	--direction: to right;
+
+	height: 0.15rem;
+	background: linear-gradient(var(--direction), var(--block-color), var(--secondary-color));
+
+	&:is(html[dir="rtl"] *) {
+		--direction: to left;
+		transform-origin: right center;
+	}
+}
+
+.medium-zoom-overlay {
+	z-index: 1000;
+}
+
+.medium-zoom-image--opened {
+	z-index: 1000;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+	animation: none;
+	mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+	z-index: 10000;
+}
+
+::view-transition-new(root) {
+	z-index: 10001;
+}
+
+[data-theme="dark"]::view-transition-old(root) {
+	z-index: 10001;
+}
+
+[data-theme="dark"]::view-transition-new(root) {
+	z-index: 10000;
+}
+
+@theme {
+	--color-primary: var(--primary-color);
+	--color-secondary: var(--secondary-color);
+	--color-weak: var(--weak-color);
+	--color-background: var(--background-color);
+	--color-block: var(--block-color);
+	--color-shadow: var(--shadow-color);
+	--color-selection: var(--selection-color);
+
+	--font-serif: "Noto Serif SC", "Source Han Serif SC", STSong, "Songti SC", SimSun, serif;
+	--font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+	--font-cursive: "Noto Serif SC", "Source Han Serif SC", STSong, "Songti SC", serif;
+
+	@keyframes shaky {
+		0% {
+			transform: translate(0, 0) rotate(0deg);
+		}
+		10% {
+			transform: translate(-1px, -2px) rotate(-1deg);
+		}
+		20% {
+			transform: translate(-3px, 1px) rotate(1deg);
+		}
+		30% {
+			transform: translate(2px, -1px) rotate(0deg);
+		}
+		40% {
+			transform: translate(1px, 2px) rotate(1deg);
+		}
+		50% {
+			transform: translate(-1px, -1px) rotate(-1deg);
+		}
+		60% {
+			transform: translate(-3px, 1px) rotate(0deg);
+		}
+		70% {
+			transform: translate(2px, 1px) rotate(-1deg);
+		}
+		80% {
+			transform: translate(-1px, -2px) rotate(1deg);
+		}
+		90% {
+			transform: translate(2px, 2px) rotate(0deg);
+		}
+		100% {
+			transform: translate(0, 0) rotate(-1deg);
+		}
+	}
+
+	--animate-shaky: shaky 0.6s infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	:root {
+		--animate-shaky: none;
+	}
+}
+
+@layer components {
+	.link {
+		@apply underline decoration-transparent decoration-[0.05em] underline-offset-[0.15em] transition-[text-decoration-color] hover:decoration-current;
+	}
+
+	.pop {
+		@apply opacity-0 invisible z-2000 transition-[opacity,visibility] group-hover/pop:opacity-100 group-hover/pop:visible;
+	}
+}
+
+@utility clip-path-hidden {
+	clip-path: inset(0 0 0 100%);
+
+	@variant ltr {
+		clip-path: inset(0 100% 0 0);
+	}
+}
+
+@utility clip-path-visible {
+	clip-path: inset(0 0 0 0);
+
+	@variant ltr {
+		clip-path: inset(0 0 0 0);
 	}
 }
