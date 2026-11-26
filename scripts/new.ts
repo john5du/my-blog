@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { cancel, confirm, intro, isCancel, log, multiselect, note, outro, select, spinner, text } from "@clack/prompts";
 import { Temporal } from "temporal-polyfill";
+import { stringify } from "yaml";
 import i18nit from "$i18n";
 import config, { monolocale } from "../site.config";
 
@@ -37,16 +38,17 @@ const CANCEL_MESSAGE = t("new.cancel");
 	path = join(path, contentType);
 
 	// Select language for the article (skip if single language mode)
-	let locale: string | symbol = config.i18n.defaultLocale;
+	let locale = config.i18n.defaultLocale;
 	if (!monolocale) {
-		locale = await select({
+		const selected = await select({
 			message: t("new.step.language"),
 			options: config.i18n.locales.map(locale => ({ label: i18nit(locale)("language"), value: locale })),
 			initialValue: config.i18n.defaultLocale
 		});
 
 		// Exit if user cancels the selection
-		isCancel(locale) && (cancel(CANCEL_MESSAGE), process.exit(0));
+		isCancel(selected) && (cancel(CANCEL_MESSAGE), process.exit(0));
+		locale = selected;
 
 		// Update path based on selected locale
 		path = join(path, locale);
@@ -54,17 +56,28 @@ const CANCEL_MESSAGE = t("new.cancel");
 
 	// Generate timestamp in ISO format with timezone
 	let content = "";
-	const timestamp = Temporal.Now.zonedDateTimeISO().toString({ smallestUnit: "second", timeZoneName: "never" }).replace("T", " ");
+	const now = Temporal.Now.zonedDateTimeISO().toString({ smallestUnit: "second", timeZoneName: "never" });
+	const timestamp = new Date(now);
 
 	// Generate frontmatter metadata based on content type
-	const information: any = {};
+	let information: {
+		title?: string;
+		timestamp: Date;
+		series?: string;
+		tags?: string[];
+		description?: string;
+		sensitive?: boolean;
+		toc?: boolean;
+		top?: number;
+		draft?: boolean;
+	};
 	if (contentType === "preface") {
 		// Preface uses timestamp as filename
-		information.timestamp = timestamp;
+		information = { timestamp };
 
 		content += i18nit(locale, "script")("new.preface.start");
 		// Generate filename from timestamp (e.g., 1970-01-01-00-00-00.md)
-		path = join(path, `${timestamp.substring(0, 19).replace(/[\s:]/g, "-")}.md`);
+		path = join(path, `${now.substring(0, 19).replace(/[T:]/g, "-")}.md`);
 	} else {
 		// Note and Jotting require additional metadata
 		content += i18nit(locale, "script")("new.article.start");
@@ -79,8 +92,7 @@ const CANCEL_MESSAGE = t("new.cancel");
 		// Exit if user cancels the input
 		isCancel(title) && (cancel(CANCEL_MESSAGE), process.exit(0));
 
-		information.title = title;
-		information.timestamp = timestamp;
+		information = { title, timestamp };
 
 		// Slugify function: Convert title to URL-friendly slug
 		// Normalizes Unicode, removes special characters, converts to lowercase and hyphens
@@ -95,11 +107,10 @@ const CANCEL_MESSAGE = t("new.cancel");
 				.replace(/^-+|-+$/g, "");
 
 		// Prompt user to input content ID (filename)
-		let id: string | symbol = slugify(title);
-		id = await text({
+		const id = await text({
 			message: t("new.step.id.name"),
 			placeholder: t("new.step.id.placeholder"),
-			initialValue: id,
+			initialValue: slugify(title),
 			validate: value => (value && value === slugify(value) ? undefined : t("new.step.id.validate"))
 		});
 
@@ -131,7 +142,11 @@ const CANCEL_MESSAGE = t("new.cancel");
 		isCancel(tags) && (cancel(CANCEL_MESSAGE), process.exit(0));
 
 		// Add tags to frontmatter if provided
-		if (tags) information.tags = `[${tags}]`;
+		const tagList = tags
+			.split(",")
+			.map(tag => tag.trim())
+			.filter(Boolean);
+		if (tagList.length > 0) information.tags = tagList;
 
 		// Prompt user to input description (optional)
 		const description = await text({
@@ -190,18 +205,16 @@ const CANCEL_MESSAGE = t("new.cancel");
 		}
 	}
 
-	// Construct frontmatter with metadata and content template
+	// Match Astro's YAML schema so timestamps remain dates and date-like text remains a string.
+	const frontmatter = stringify(information, { customTags: ["timestamp"] });
 	content = `---
-${Object.entries(information)
-	.map(([key, value]) => `${key}: ${value}`)
-	.join("\n")}
----
+${frontmatter}---
 
 ${content}
 `;
 
 	// Display the generated content to the user for review
-	`${note(content, t("new.preview", { path }))}:`;
+	note(content, t("new.preview", { path }));
 
 	// Confirm with user to proceed with file creation
 	const proceed = await confirm({

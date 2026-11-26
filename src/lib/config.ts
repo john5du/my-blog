@@ -1,3 +1,5 @@
+import type { ProviderName } from "@tuyuritio/identity";
+
 /**
  * Creative Commons 4.0 License Type
  */
@@ -9,6 +11,9 @@ type CCLicenseType = "CC0 1.0" | "CC BY 4.0" | "CC BY-SA 4.0" | "CC BY-NC 4.0" |
 export type Section = "note" | "jotting";
 
 interface SiteConfigOptions<Locales extends readonly string[] = readonly string[]> {
+	/** Site URL */
+	site: string;
+
 	/** Site Title */
 	title: string;
 
@@ -96,6 +101,21 @@ interface SiteConfigOptions<Locales extends readonly string[] = readonly string[
 		limit?: number;
 	};
 
+	/** Comment Configuration */
+	comment?: {
+		/** Enable Comment System (requires SSR / Cloudflare adapter) */
+		enable?: boolean;
+
+		/** Maximum Comment Length */
+		"max-length"?: number;
+
+		/** Hide top-level deleted comments without replies */
+		"hide-deleted"?: boolean;
+
+		/** Show edit history */
+		history?: boolean;
+	};
+
 	/** Latest Content Display */
 	latest?: "*" | Section[];
 }
@@ -109,5 +129,34 @@ interface SiteConfigOptions<Locales extends readonly string[] = readonly string[
  * @returns The validated site configuration
  */
 export default function siteConfig<const Locales extends string[]>(config: SiteConfigOptions<Locales>): SiteConfigOptions<Locales> {
+	// Validate that `site` is a well-formed absolute URL at startup
+	new URL(config.site);
 	return config;
+}
+
+interface OAuthProviderOption {
+	name: string;
+	logo: string;
+	clientID: string;
+	clientSecret: string;
+	scopes: readonly string[];
+}
+
+/**
+ * Processes the configured OAuth providers, filtering out entries missing `clientID` or `clientSecret`,
+ * and splits them into client-safe display metadata (`oauth`) and server-only credentials (`oauthConfig`).
+ */
+export function providers(clients: Partial<Record<ProviderName, OAuthProviderOption>>): {
+	oauth: Array<{ name: string; logo: string }>;
+	oauthConfig: Partial<Record<ProviderName, Omit<OAuthProviderOption, "logo">>>;
+} {
+	const enabled = Object.entries(clients).filter((entry): entry is [ProviderName, OAuthProviderOption] =>
+		Boolean(entry[1]?.clientID && entry[1].clientSecret)
+	);
+	return {
+		oauth: enabled.map(([, { name, logo }]) => ({ name, logo })),
+		oauthConfig: Object.fromEntries(
+			enabled.map(([id, { name, clientID, clientSecret, scopes }]) => [id, { name, clientID, clientSecret, scopes }])
+		)
+	};
 }

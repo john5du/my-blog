@@ -1,5 +1,6 @@
 // @ts-check
-import { defineConfig } from "astro/config";
+import { defineConfig, fontProviders } from "astro/config";
+import cloudflare from "@astrojs/cloudflare";
 import yaml from "@rollup/plugin-yaml";
 import mdx from "@astrojs/mdx";
 import sitemap from "@astrojs/sitemap";
@@ -21,7 +22,7 @@ import footnote from "remark-footnotes-extra";
 import abbr from "@tuyuritio/remark-abbreviation";
 import { remarkExtendedTable as table, extendedTableHandlers as tableHandler } from "remark-extended-table";
 import alerts from "@tuyuritio/remark-github-alert";
-import { rehypeHeadingIds as ids } from "@astrojs/markdown-remark";
+import { rehypeHeadingIds as ids, unified, type RehypePlugin } from "@astrojs/markdown-remark";
 import anchor from "rehype-autolink-headings";
 import links from "rehype-external-links";
 import katex from "rehype-katex";
@@ -31,12 +32,19 @@ import sectionize from "@hbsnow/rehype-sectionize";
 import copy from "@tuyuritio/shiki-code-copy";
 
 import reading from "./src/lib/reading";
+import commentIntegration from "./src/integrations/comment";
 
-import siteConfig from "./site.config";
+import siteConfig, { comment } from "./site.config";
 
 // https://astro.build/config
 export default defineConfig({
-	site: "https://blog.john5.work",
+	adapter: comment
+		? cloudflare({
+				prerenderEnvironment: "node",
+				imageService: "compile"
+			})
+		: undefined,
+	site: siteConfig.site,
 	trailingSlash: "ignore",
 	i18n: {
 		...siteConfig.i18n,
@@ -46,43 +54,45 @@ export default defineConfig({
 		}
 	},
 	markdown: {
-		remarkPlugins: [
-			[GFM, { singleTilde: false }],
-			ins,
-			mark,
-			spoiler,
-			CJK,
-			[CJKStrikethrough, { singleTilde: false }],
-			ruby,
-			attr,
-			math,
-			gemoji,
-			footnote,
-			abbr,
-			[table, { colspanWithEmpty: true }],
-			[alerts, { typeFormat: "capitalize" }],
-			reading
-		],
-		remarkRehype: {
-			footnoteLabel: null,
-			footnoteLabelTagName: "p",
-			footnoteLabelProperties: {
-				className: ["hidden"]
+		processor: unified({
+			remarkPlugins: [
+				[GFM, { singleTilde: false }],
+				ins,
+				mark,
+				spoiler,
+				CJK,
+				[CJKStrikethrough, { singleTilde: false }],
+				ruby,
+				attr,
+				math,
+				gemoji,
+				footnote,
+				abbr,
+				[table, { colspanWithEmpty: true }],
+				[alerts, { typeFormat: "capitalize" }],
+				reading
+			],
+			remarkRehype: {
+				footnoteLabel: null,
+				footnoteLabelTagName: "p",
+				footnoteLabelProperties: {
+					className: ["hidden"]
+				},
+				handlers: {
+					...tableHandler
+				}
 			},
-			handlers: {
-				...tableHandler
-			}
-		},
-		rehypePlugins: [
-			ids,
-			[anchor, { behavior: "wrap" }],
-			[links, { target: "_blank", rel: ["nofollow", "noopener", "noreferrer"] }],
-			katex,
-			figure,
-			wrapper,
-			sectionize
-		],
-		smartypants: false,
+			rehypePlugins: [
+				ids,
+				[anchor, { behavior: "wrap" }],
+				[links, { target: "_blank", rel: ["nofollow", "noopener", "noreferrer"] }],
+				katex,
+				figure as RehypePlugin,
+				wrapper as RehypePlugin,
+				sectionize as RehypePlugin
+			],
+			smartypants: false
+		}),
 		shikiConfig: {
 			themes: {
 				light: "github-light",
@@ -91,11 +101,12 @@ export default defineConfig({
 			transformers: [copy({ duration: 1500 })]
 		}
 	},
+	session: false,
 	vite: {
-		// @ts-expect-error
 		plugins: [yaml(), tailwindcss()]
 	},
 	integrations: [
+		commentIntegration(),
 		svelte(),
 		mdx(),
 		sitemap(),
@@ -105,5 +116,31 @@ export default defineConfig({
 			smoothScrolling: false,
 			progress: true
 		})
+	],
+	fonts: [
+		{
+			name: "Noto Serif",
+			provider: fontProviders.google(),
+			weights: [400, 700],
+			optimizedFallbacks: false,
+			fallbacks: ["Noto Serif", "Georgia", "Times New Roman", "serif"],
+			cssVariable: "--font-noto-serif"
+		},
+		{
+			name: "Noto Serif SC",
+			provider: fontProviders.google(),
+			weights: [400, 700],
+			optimizedFallbacks: false,
+			fallbacks: ["Noto Serif SC", "Source Han Serif SC", "STSong", "Songti SC", "SimSun", "serif"],
+			cssVariable: "--font-noto-serif-sc"
+		},
+		{
+			name: "Noto Serif JP",
+			provider: fontProviders.google(),
+			weights: [400, 700],
+			optimizedFallbacks: false,
+			fallbacks: ["Noto Serif JP", "Source Han Serif JP", "Hiragino Mincho ProN", "MS Mincho", "serif"],
+			cssVariable: "--font-noto-serif-jp"
+		}
 	]
 });
